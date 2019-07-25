@@ -53,3 +53,12 @@
   
 * the quick answer is : NO  
   简单的回答：不。
+
+* Select the "Panel" tab at top
+  在顶上的tab页上选择panel页
+
+* I can follow you advice
+  我听从你的建议。
+
+* no better you than you that you are
+  没有比你现在更好的了。（scars to you beautiful歌里面的）

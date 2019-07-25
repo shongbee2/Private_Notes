@@ -18,3 +18,10 @@
 
 * [winDirStat](https://windirstat.net/index.html)
   
+## Editor
+
+[HxD-Freeware hex editor and disk editor](https://mh-nexus.de/en/hxd/)
+
+## Find Files
+
+[agentransack-free File searching Utility](https://www.mythicsoft.com/agentransack/)
