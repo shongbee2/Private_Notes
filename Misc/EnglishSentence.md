@@ -62,3 +62,12 @@
 
 * no better you than you that you are
   没有比你现在更好的了。（scars to you beautiful歌里面的）
+
+* we are looking for it eagerly.
+  我们很渴望找到他。
+
+* but bear in mind that this is not mandatory in any way.
+   但请记住，这不是任何强制要求。bear in mind that: 把..牢记于心。
+
+* when CopyResourceRegion twice for the same texture, the barriers need to commit splits
+  当对同一个贴图调用两次CopyResourceRegion, barriers 需要分开提交。
