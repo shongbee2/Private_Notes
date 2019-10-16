@@ -71,3 +71,18 @@
 
 * when CopyResourceRegion twice for the same texture, the barriers need to commit splits
   当对同一个贴图调用两次CopyResourceRegion, barriers 需要分开提交。
+
+* If you initialize HTCS, ensure that you do so before initializing the profiler.
+  如果你初始化了HTCS，请确保初始化HTCS在初始化profiler之前。
+
+* She's a weird girl  
+  他真是一个古怪的女孩儿
+
+* the boy will distinguish between the A and the B
+  这个男孩儿会辨别a和b
+
+* How to expand the scope ? How to narrow down the scope ?
+  怎么扩大范围 ？ 怎么缩小范围？
+
+* Immutable samplers are permanently bound into the set layout and must not be changed。
+  不变的的sampler被永久的保存在set中，而且不能被修改。(immutable, are permanently bound, be changed)

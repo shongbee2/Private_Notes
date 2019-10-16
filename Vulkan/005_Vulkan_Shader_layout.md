@@ -8,6 +8,7 @@
   - [PipelineLayout VS Shader Layout VS SetLayout VS sets](#pipelinelayout-vs-shader-layout-vs-setlayout-vs-sets)
   - [Code and Shader](#code-and-shader)
   - [paramter type](#paramter-type)
+  - [Vulkan Errors](#vulkan-errors)
 
 ## check list
 
@@ -40,7 +41,28 @@ NN_ASSERT_EQUAL(result, VK_SUCCESS);
 binding的内容必须要跟Shader的内容完全一致，否则就会创建pipeline 的时候失败。
 bindging的个数和类型，都有硬件数量限制，这些限制可以通过API查询到。绑定的数量不能超出限制。  
 VkDescriptorSetLayoutCreateInfo 结构体是创建的内容，注意pNext，flag的使用都需要硬件支持, 通过api可以获取这些信息。  
-VkDescriptorSetLayoutBinding 结构体中，只有count，type，binding。 binding对应set里面的起始binding，count是指同样的类型有多少个，他会占用[binding,binding+count)的位置。
+VkDescriptorSetLayoutBinding 结构体中，只有count，type，binding。 binding对应set里面的起始binding，count是指同样的类型的数组，他会暂用参数个数，但是不能代替binding。
+例如：  
+```
+VkDescriptorSetLayoutBinding bindings[10];
+VkDescriptorSetLayoutBinding binding;        
+binding.stageFlags = VK_SHADER_STAGE_ALL_GRAPHICS;        
+binding.pImmutableSamplers = NULL; 
+
+binding.binding = 2;
+binding.descriptorType = VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER;
+binding.descriptorCount = 3;        
+bindings[0] = binding;
+
+binding.binding = 3;
+binding.descriptorType = VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER;
+binding.descriptorCount = 2;
+bindings[1] = binding;
+
+这样也，如果没有binding=3这个，也会提示solot 0.3没有binding东西。所以我认为descriptorCount只是一个数组。并不能指定layout的bingding的值。
+如果他的值超过12个，switch也会提示uniformbuffer超出限制。他这些count是绑定在什么地方的呢？怎么去更新他呢？
+```
+
 通过API可以获取这些信息，这些API是什么呢？参考[xxx？](还没有写)  
 switch 对 VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER 只能支持12个。  
 switch就不支持这些flag，例如 VK_DESCRIPTOR_SET_LAYOUT_CREATE_UPDATE_AFTER_BIND_POOL_BIT_EXT。  
@@ -125,13 +147,15 @@ result = vkCreatePipelineLayout(vkDeviceValue, &info, NULL, &m_PipelineLayout);
 - [x] vkCmdBindDescriptorSets 指定的layout和Pipeline不一致会怎么样？报不兼容的错误。
 - [x] vkCmdBindDescriptorSets 是否可以只绑定部分sets？ 可以只绑定Shader需要的sets，冗余set可以不绑定。
 - [x] 我怎么让第二个sets工作起来？shader的版本用460就可以了，参考下面的代码。
-- [ ] 在绑定的这些数据中，并没有指定Vs，Ps等他们的各自参数，他们是统一在使用么？
-- [ ] 怎么去验证Buffer是一个有效的Buffer。
+- [x] 在绑定的这些数据中，并没有指定Vs，Ps等他们的各自参数，他们是统一在使用么？在创建的时候明明有flag指定的。
+- [x] 在Shader的不同阶段,vs,ps中，可以在相同的binding中绑定不同的数据么？创建是没有问题，但是更新有问题，更新的时候没有指定stage的参数。所以相当于不能用。
+- [x] 怎么去验证Buffer是一个有效的Buffer？抓帧验证？没有办法验证他是否有效，因为他的数据本来就是可以随便放的。
+- [ ] VkDescriptorSetLayoutBinding.descriptorCount 属性的理解
 
 在渲染的时候，pipelineLayout是创建Pipeline的一个关键数据，创建可变的binding数据的sets也是通过setlayout来创建的。 sets又是绑定可变数据给渲染管线使用的关键数据。他们之间是怎么合作的呢？  
 首先我们知道Pipeline创建之后就不能修改了，能动态修改的就是通过调用 vkUpdateDescriptorSets 来更新texutre,buffer等。同时在渲染之前也会有两个关键的API vkCmdBindPipeline,vkCmdBindDescriptorSets 来确定使用那个pipeline和哪些sets。 这些绑定有一些细节要求，他们表现在:  
   
-Shader 决定了我们需要最小布局，需要的最小参数，如果创建的layout和绑定的数据，shader需要的数据没有提供正确，就会直接报错。  
+Shader 决定了我们需要最小布局，需要的最小参数，如果创建的layout和绑定的数据 和 shader需要的数据没有匹配，就会直接报错。  
 PipelineLayout,DescriptorSets等都可以作为超级，更新绑定符合自己规则的冗余数据。可以作为多个shader的超集存在。例如：  
 ```
 Shader A 需要的layout是 :
@@ -202,3 +226,17 @@ VkDescriptorType
     VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER_DYNAMIC = 8,
     VK_DESCRIPTOR_TYPE_STORAGE_BUFFER_DYNAMIC = 9,
     VK_DESCRIPTOR_TYPE_INPUT_ATTACHMENT = 10,
+
+ptr to const uniform image          |   VK_DESCRIPTOR_TYPE_SAMPLED_IMAGE
+ptr to const uniform sampler        |   VK_DESCRIPTOR_TYPE_SAMPLER
+ptr to uniform struct               |   VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER
+ptr to uniform struct of (oddtype)  |   VK_DESCRIPTOR_TYPE_STORAGE_BUFFER
+
+## Vulkan Errors
+
+vkUpdateDescriptorSets() failed write update validation for Descriptor Set 0x212aadf140 with error: DescriptorSet 0x212aadf140 does not have binding 1. The spec valid usage text states 'dstBinding must be less than or equal to the maximum value of binding of all VkDescriptorSetLayoutBinding structures specified when dstSet's descriptor set layout was created' (https://www.khronos.org/registry/vulkan/specs/1.0/html/vkspec.html#VUID-VkWriteDescriptorSet-dstBinding-00315)"
+这个错误是说定义里面并没有binding 1，但是尝试去更新binding 1的数据。所以报错。  
+
+
+Shader expects at least 1024 descriptors for binding 0.0 (used as type `ptr to const uniform arr[1024] of image(dim=1, sampled=1)`) but only 1 provided"
+就是说bingding 0.1期望的是一个1024的数组，但是我们只绑定了一个。

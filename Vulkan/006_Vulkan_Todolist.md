@@ -12,3 +12,4 @@ https://zhuanlan.zhihu.com/p/46302125
 ## Footprint
 
 http://antongerdelan.net/opengl/compute.html
+https://gpuopen.com/vulkan-barriers-explained/  is barrier 
