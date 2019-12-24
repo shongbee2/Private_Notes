@@ -86,3 +86,14 @@
 
 * Immutable samplers are permanently bound into the set layout and must not be changed。
   不变的的sampler被永久的保存在set中，而且不能被修改。(immutable, are permanently bound, be changed)
+
+* Update Shader parameters base on reflection information
+  根据反射信息修改着色器参数
+
+* Check that the provider and reflection parameters match
+  检查提供者和反射信息是否匹配
+
+* performance metrics
+  性能指标
+* indicate dedicate
+  表明，奉献。

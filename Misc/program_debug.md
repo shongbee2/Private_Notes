@@ -13,3 +13,16 @@ little endian ：内存中的高位，在cpu中是高位 例如内存中 0x00 0x
 [judy array](https://en.wikipedia.org/wiki/Judy_array)
 [Endianness](https://en.wikipedia.org/wiki/Endianness)
 
+
+## switch 内存保护
+
+ char *ptr = (char*)(__aligned_alloc(nn::os::MemoryPageSize, nn::os::MemoryPageSize));
+    
+    nn::os::SetMemoryPermission((uintptr_t)(ptr), nn::os::MemoryPageSize, nn::os::MemoryPermission_ReadOnly);
+    char c1 = ptr[1];
+    ptr[2] = '4';
+    这个只能保护nn::os::MemoryPageSize单位的内存，地址必须是page对齐，长度也必须是pagesize的整数倍。
+
+    D:\Apex\jhfu_apex_nx_porting\framework\extern\techgroup\framework\gear\inc\gear\memory\memtcmallocprivate.h
+
+size = 184

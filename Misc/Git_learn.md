@@ -7,3 +7,4 @@ git config --system --unset credential.helper
 但是我因为是改了密码导致的，所以就算调用了也没有弹出窗口，还是出错，还好我用tortoise git里面有一个credential页，把里面的内容都删除掉，在pull就提示需要输入密码了。
 而且，注意，这个不能使用git-bash,需要使用git-cmd的命令才行。
 https://blog.csdn.net/zqian1994/article/details/82143111
+
